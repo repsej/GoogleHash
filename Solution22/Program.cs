@@ -160,7 +160,7 @@ namespace HashCode20Solution
             return (val, l);
         }
         #endregion
-
+        
 
         static void Main()
         {
@@ -171,8 +171,8 @@ namespace HashCode20Solution
 
         static void Startup()
         {
-            string basePath = @"input\";
-            string outputPath = @"..\..\..\output\";
+            string basePath = @"input/";
+            string outputPath = @"../../../output/";
             (string, int)[] problems =
             {
                 ("a_example", 10000),
@@ -199,9 +199,8 @@ namespace HashCode20Solution
                 WriteSolution(outputPath+problem + ".out", pizzas);
             }
 
-            Console.WriteLine("\n    [Any key to close]");
-
-            Console.ReadKey(true);
+            //Console.WriteLine("\n    [Any key to close]");
+            //Console.ReadKey(true);
         }
     }
 }
