@@ -28,6 +28,7 @@ namespace HashCode22Solution
                 
                 workers.Add(t);
                 t.Start();
+                t.Join();
             }
 
             foreach (var thread in workers)
@@ -125,12 +126,14 @@ an integer Lk (1≤Lk≤100) – the required skill level.
 
             internal void Calculate()
             {
+                var scheduledProjects = new SortedDictionary<int, int> ();
                 int day = 0;
                 int score = 0;
                 var availableProjects = new HashSet<int>();
                 for (int i = 0; i < P; i++)
                     availableProjects.Add(i);
                 var solution = new List<(string, string[] )>();
+
 
                 while(availableProjects.Count > 0)
                 {
@@ -185,6 +188,7 @@ an integer Lk (1≤Lk≤100) – the required skill level.
 
                         if (foundP)
                         {
+                            scheduledProjects.TryAdd(day + p.Days, pi);
                             score += pscore;
 
                             solution.Add((p.PName, attemptContributors.Select(s => Contributors[s].CName).ToArray()));
@@ -203,7 +207,20 @@ an integer Lk (1≤Lk≤100) – the required skill level.
 
                         }
                     }
-                    day++;
+
+                    if (scheduledProjects.Count > 0)
+                    {
+                        var nextDay = scheduledProjects.First().Key;
+                        scheduledProjects.Remove(nextDay);
+
+                        day = nextDay;
+                    }
+                    else
+                    {
+                        day++;
+                        break;
+                    }
+
                     Console.WriteLine($"{day} {availableProjects.Count}");
 
                 }
