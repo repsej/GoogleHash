@@ -15,7 +15,7 @@ namespace HashCode22Solution
             string inputPath = "../../../Input/";
             string outputPath = "../../../Output/";
             int N = 1; // Solve only the first N problems
-            var files = Directory.GetFiles(inputPath).Take(N);
+            var files = Directory.GetFiles(inputPath);
 
             var workers = new List<Thread>();
 
@@ -72,10 +72,11 @@ a string Xk – the name of the skill (ASCII string of at most 20 characters, al
 an integer Lk (1≤Lk≤100) – the required skill level.
          */
 
+
         public class Problem
         {
             int C; int P;
-            (string CName, int N, (string SkillName, int L)[] Skills)[] Contributors;
+            (string CName, int N, Dictionary<string, int> Skills, int Available)[] Contributors;
             (string PName, int Days, int Score, int BestBefore, int R, (string SkillName, int Level)[] Skills)[] Projects;
             // (Name N (SkillName L)[N])[C] -- contributors
             // (Name D S B R (X L)[R])[P]
@@ -90,16 +91,20 @@ an integer Lk (1≤Lk≤100) – the required skill level.
                 pr.Read(out C);
                 pr.Read(out P);
 
-                Contributors = new (string CName, int N, (string SkillName, int L)[] Skills)[C];
+                Contributors = new (string CName, int N, Dictionary<string, int> Skills, int)[C];
                 for (int i = 0; i < C; i++)
                 {
                     ref var c = ref Contributors[i];
                     pr.Read(out c.CName); pr.Read(out c.N);
-                    pr.Read(out c.Skills, c.N);
+
+                    c.Skills = new Dictionary<string, int>();
+                    for (int j = 0; j < c.N; j++)
+                        c.Skills.Add(pr.S(), pr.I());
                 }
 
                 Projects = new (string PName, int Days, int Score, int BestBefore, int R, (string SkillName, int Level)[])[P];
 
+                var set = new HashSet<string>();
                 for (int i = 0; i < P; i++)
                 {
                     ref var p = ref Projects[i];
@@ -109,14 +114,99 @@ an integer Lk (1≤Lk≤100) – the required skill level.
                     pr.Read(out p.BestBefore);
                     pr.Read(out p.R);
                     pr.Read(out p.Skills, p.R);
+                    foreach (var s in p.Skills)
+                        set.Add(s.SkillName);
                 }
+                Console.WriteLine($"skills:{set.Count} P:{P} C:{C}");
 
             }
 
             internal void Calculate()
             {
-                // Solve problem
+                int day = 0;
+                int score = 0;
+                var availableProjects = new HashSet<int>();
+                for (int i = 0; i < P; i++)
+                    availableProjects.Add(i);
+                var solution = new List<object>();
+
+                while(availableProjects.Count > 0)
+                {
+                    var dailyProjects = new HashSet<int>(availableProjects);
+
+                    while (dailyProjects.Count > 0)
+                    {
+                        var pi = dailyProjects.First();
+                        dailyProjects.Remove(pi);
+
+                        var p = Projects[pi];
+                        var pscore = p.Score - Math.Max(0, (day + p.Days) - p.BestBefore);
+                        if (pscore <= 0)
+                        {
+                            availableProjects.Remove(pi);
+                            continue;
+                        }
+
+                        var attemptContributors = new List<int>();
+                        var foundP = true;
+                        foreach (var sk in p.Skills)
+                        {
+                            var foundC = false;
+                            for (int c = 0; c < C; c++)
+                            {
+                                ref var contributor = ref Contributors[c];
+
+                                if (contributor.Available > day)
+                                    continue;
+
+                                if (contributor.Skills.TryGetValue(sk.SkillName, out var level))
+                                {
+                                    if (level >= sk.Level)
+                                    {
+                                        attemptContributors.Add(c);
+                                        foundC = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!foundC)
+                            {
+                                foundP = false;
+                                break;
+                            }
+
+
+                        }
+
+                        if (foundP)
+                        {
+                            score += pscore;
+
+                            solution.Add((p.PName, attemptContributors.Select(s => Contributors[s].CName)));
+                            availableProjects.Remove(pi);
+                            Console.WriteLine(p.PName);
+
+                            for (int subi = 0; subi < attemptContributors.Count; subi++)
+                            {
+                                var sc = attemptContributors[subi];
+                                Contributors[sc].Available = day + p.Days;
+                                if (p.Skills[subi].Level >= Contributors[sc].Skills[p.Skills[subi].SkillName])
+                                {
+                                    Contributors[sc].Skills[p.Skills[subi].SkillName]++;
+                                }
+                            }
+
+
+                        }
+                    }
+                    day++;
+                }
+
+
+
             }
+
+
 
         }
 
