@@ -28,7 +28,6 @@ namespace HashCode22Solution
                 
                 workers.Add(t);
                 t.Start();
-                t.Join();
             }
 
             foreach (var thread in workers)
@@ -162,6 +161,9 @@ an integer Lk (1≤Lk≤100) – the required skill level.
                                 if (contributor.Available > day)
                                     continue;
 
+                                if (attemptContributors.Contains(c))
+                                    continue;
+
                                 if (contributor.Skills.TryGetValue(sk.SkillName, out var level))
                                 {
                                     if (level >= sk.Level)
@@ -187,7 +189,6 @@ an integer Lk (1≤Lk≤100) – the required skill level.
 
                             solution.Add((p.PName, attemptContributors.Select(s => Contributors[s].CName).ToArray()));
                             availableProjects.Remove(pi);
-                            Console.WriteLine(p.PName);
 
                             for (int subi = 0; subi < attemptContributors.Count; subi++)
                             {
@@ -203,6 +204,8 @@ an integer Lk (1≤Lk≤100) – the required skill level.
                         }
                     }
                     day++;
+                    Console.WriteLine($"{day} {availableProjects.Count}");
+
                 }
 
 
