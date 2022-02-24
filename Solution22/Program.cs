@@ -47,12 +47,39 @@ namespace HashCode22Solution
 
             Console.WriteLine($"Wrote solution to: {filename}");
         }
+        /*
+an integer C (1 ≤ C≤ 105) – the number of contributors,
+an integer P (1 ≤ P ≤ 105) – the number of projects.
+This is followed by C sections describing individual contributors. Each contributor is described by the following lines:
+
+the first line contains:
+the contributor's name (ASCII string of at most 20 characters, all of which are lowercase or uppercase English alphabet letters a-z and A-Z, or numbers 0-9),
+an integer N (1≤ N ≤ 100) - the number of skills of the contributor.
+the next N lines describe individual skills of the contributor. Each such line contains:
+the name of the skill (ASCII string of at most 20 characters, all of which are lowercase or uppercase English alphabet letters a-z and A-Z, numbers 0-9, dashes '-' or pluses '+'),
+an integer Li (1≤ Li ≤ 10) - skill level.
+
+This is followed by P sections describing individual projects. Each project is described by the following lines:
+
+the first line contains:
+the name of the project (ASCII string of at most 20 characters, all of which are lowercase or uppercase English alphabet letters a-z and A-Z or numbers 0-9),
+an integer Di (1 ≤Di ≤ 105) – the number of days it takes to complete the project,
+an integer Si (1 ≤ Si ≤ 105) – the score awarded for project’s completion,
+an integer Bi (1 ≤ Bi ≤ 105) – the “best before” day for the project,
+an integer Ri (1 ≤ Ri ≤ 100) – the number of roles in the project.
+the next Ri lines describe the skills in the project:
+a string Xk – the name of the skill (ASCII string of at most 20 characters, all of which are lowercase or uppercase English alphabet letters a-z and A-Z, numbers 0-9, dashes '-' or pluses '+'),
+an integer Lk (1≤Lk≤100) – the required skill level.
+         */
 
         public class Problem
         {
-            public (int L, int G, int S, int B, int F, int N) P;
-            public (string N, int B)[] SD;
-            public (string N, int M, int D, int U, string[] S)[] Features;
+            int C; int P;
+            (string CName, int N, (string SkillName, int L)[] Skills)[] Contributors;
+            (string PName, int Days, int Score, int BestBefore, int R, (string SkillName, int Level)[] Skills)[] Projects;
+            // (Name N (SkillName L)[N])[C] -- contributors
+            // (Name D S B R (X L)[R])[P]
+
             public Problem(string path)
             {
                 // L G S B F N - problem
@@ -60,33 +87,40 @@ namespace HashCode22Solution
                 // N M D U newline S[] -
 
                 var pr = new ProblemReader(path);
-                pr.Read(out int P);
-                pr.Read(out int N);
-                int[] Data;
-                pr.Read(out Data, N);
-
-                /*
+                pr.Read(out C);
                 pr.Read(out P);
-                pr.Read(out SD, P.S);
 
-                Features = new (string N, int M, int D, int U, string[] S)[P.F];
-                for (int i = 0; i < P.F; i++)
+                Contributors = new (string CName, int N, (string SkillName, int L)[] Skills)[C];
+                for (int i = 0; i < C; i++)
                 {
-                    ref var f = ref Features[i];
-                    pr.Read(out f.N);
-                    pr.Read(out f.M);
-                    pr.Read(out f.D);
-                    pr.Read(out f.U);
-                    pr.Read(out f.S, f.M);
+                    ref var c = ref Contributors[i];
+                    pr.Read(out c.CName); pr.Read(out c.N);
+                    pr.Read(out c.Skills, c.N);
                 }
-                */
+
+                Projects = new (string PName, int Days, int Score, int BestBefore, int R, (string SkillName, int Level)[])[P];
+
+                for (int i = 0; i < P; i++)
+                {
+                    ref var p = ref Projects[i];
+                    pr.Read(out p.PName);
+                    pr.Read(out p.Days);
+                    pr.Read(out p.Score);
+                    pr.Read(out p.BestBefore);
+                    pr.Read(out p.R);
+                    pr.Read(out p.Skills, p.R);
+                }
+
             }
 
             internal void Calculate()
             {
                 // Solve problem
             }
+
         }
+
+
         public static IEnumerable<string> ReadLinesFile(string filename)
         {
             string line;
