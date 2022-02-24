@@ -1,206 +1,691 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading;
 
-namespace HashCode20Solution
+namespace HashCode22Solution
 {
-    class Program
+    class HashCode
     {
-        public static int Capacity;
-        public static int NOfPizzas;
-        public static int[] V;
-
-        //// IO
-        #region IO
-        static void ReadProblem(string filename)
+        public static void Main()
         {
-            string text = File.ReadAllText(filename);
-            var lines = text.Split('\n');
-
-            var l0 = lines[0].Split(' ');
-
-            Capacity = Int32.Parse(l0[0]);
-            NOfPizzas = Int32.Parse(l0[1]);
+            string inputPath = @"D:\hashcoderpos\HashCode2022\world_finals_2021_in";
+            string practicePath = @"D:\hashcoderpos\HashCode2022\practice_2022";
 
 
-            V = new int[NOfPizzas];
+            string outputPath = @"..\..\..\output\";
+            int N = 1; // Solve only the first N problems
+            var files = Directory.GetFiles(practicePath);
 
-            var l1 = lines[1].Split(' ');
-            int i = 0;
-            foreach (var p in l1)
+            var workers = new List<Thread>();
+
+            foreach (var path in files)
             {
-                V[i++] = Int32.Parse(p);
-//                Console.Write(v[i - 1] + ", ");
+                var solver = new PracticeProblem(path);
+                var t = new Thread(() => solver.Calculate(), 100000000);
+
+                workers.Add(t);
+                t.Start();
+                t.Join();
             }
 
-            Console.WriteLine("-----------------");
-            Console.WriteLine("Problem read: " + filename);
-            Console.WriteLine("capacity = " + Capacity);
-            Console.WriteLine("nOfPizzas = " + NOfPizzas);
 
-            CacheInit();
-        }
 
-        static void WriteSolution(string filename, List<int> pizzas)
-        {
-            using (StreamWriter file = new StreamWriter(filename))
+            foreach (var thread in workers)
+
             {
-                file.WriteLine(pizzas.Count);
-                string p = string.Join(" ", pizzas);
-                file.WriteLine(p);
+
+                thread.Join();
+
             }
 
-            Console.WriteLine($"Wrote solution to: {filename}");
+
+
+
+
         }
-        #endregion
 
-        //////// CACHE
-        #region CACHE
-        static int _cacheHits;
+        public static IEnumerable<string> ReadLinesFile(string filename)
 
-        static Dictionary< (int,int), (int, List<int>) > _cache;
-        
-        static void CacheInit()
         {
-            _cacheHits = 0;
-            _cache = new Dictionary<(int, int), (int, List<int>)>();
-        }
 
-        static void CacheStatistics()
-        {
-            Console.WriteLine("Cache size: " + _cache.Count);
-            Console.WriteLine("Cache hits: " + _cacheHits);
-            Console.WriteLine($"Cache size/prob size:  {100.0 * _cache.Count / ((float) NOfPizzas * ((float)Capacity + 1)):G2}%");
-        }
+            string line;
 
-        static bool CacheHasKey(int n, int c)
-        {
-            bool cacheHit = _cache.ContainsKey((n, c));
-            if (cacheHit) _cacheHits++;
-            return cacheHit;
-        }
 
-        static (int, List<int>) CacheGet(int n, int c)
-        {
-            return _cache[(n, c)];
-        }
 
-        static void CacheSet(int n, int c, (int, List<int>) t)
-        {
-            _cache.Add((n, c), (t.Item1, new List<int>(t.Item2)));
-        }
-        #endregion
 
-        //// KNAPSACK
-        #region KNAPSACK
-        static (int, List<int>) KnapSack( int n, int c )
-        { 
-            if ( n == -1 || c == 0 ) return (0, new List<int>());
 
-            if (CacheHasKey(n, c)) return CacheGet(n, c);
+            // Read the file and display it line by line.
 
-            int val;
-            List<int> l;
+            StreamReader file = new StreamReader(filename);
 
-            if (V[n] > c)
+            while ((line = file.ReadLine()) != null)
+
             {
-                (val, l) = KnapSack(n - 1, c);
-            }
-            else
-            {
-                int t0, t1;
-                List<int> l0, l1;
 
-                (t0, l0) = KnapSack(n - 1, c);
+                foreach (var word in line.Split(' '))
 
-                (t1, l1) = KnapSack(n - 1, c - V[n]);
-                t1 += V[n];
-
-                if (t0 > t1)
                 {
-                    val = t0;
-                    l = l0;
+
+                    yield return word;
+
                 }
+
+            }
+
+            file.Close();
+
+        }
+
+
+
+
+
+
+
+        public static IEnumerable<object[]> Probread(string fileName)
+
+        {
+
+
+
+            StringMap stringMap = new StringMap();
+
+
+
+            //return Read(fileName).ToArray();
+
+
+
+            //IEnumerable<int[]> Read(string fileName)
+
+            {
+
+
+
+                foreach (var line in ReadLinesFile(fileName))
+
+                {
+
+                    var tokens = line.Split(" ");
+
+                    var lineresult = new object[tokens.Length];
+
+                    for (int i = 0; i < tokens.Length; i++)
+
+                    {
+
+                        var token = tokens[i];
+
+                        if (int.TryParse(token, out int number))
+
+                        {
+
+                            lineresult[i] = number;
+
+                        }
+
+                        else
+
+                        {
+
+                            lineresult[i] = token;
+
+                        }
+
+                    }
+
+
+
+                    yield return lineresult;
+
+                }
+
+            }
+
+        }
+
+
+
+        public static IEnumerable<T> Repeat<T>(int C, Func<T> A)
+
+        {
+
+            for (int i = 0; i < C; i++)
+
+            {
+
+                yield return A();
+
+            }
+
+        }
+
+
+
+
+
+        public class ProblemReader
+
+        {
+
+            StringMap SM = new StringMap();
+
+
+
+            string[] _tokens;
+
+            int _pos = 0;
+
+
+
+            public (T0, T1) RV<T0, T1>()
+
+            {
+
+                (T0, T1) v;
+
+                Read(out v);
+
+                return v;
+
+            }
+
+
+
+            public void Read<T0>(out T0 v)
+
+            {
+
+                if (typeof(T0) == typeof(int))
+
+                {
+
+                    v = (T0)Convert.ChangeType(I(), typeof(T0));
+
+                }
+
                 else
+
                 {
-                    l1.Add(n);
-                    val = t1;
-                    l = l1;
+
+                    v = (T0)Convert.ChangeType(O(), typeof(T0));
+
+                }
+
+            }
+
+
+
+
+
+            public void Read<T0, T1>(out (T0 v0, T1 v1) tup)
+
+            {
+
+                Read(out tup.v0);
+
+                Read(out tup.v1);
+
+            }
+
+
+
+            public void Read<T0, T1, T2>(out (T0 v0, T1 v1, T2 v2) tup)
+
+            {
+
+                Read(out tup.v0);
+
+                Read(out tup.v1);
+
+                Read(out tup.v2);
+
+            }
+
+
+
+            public void Read<T0, T1, T2, T3>(out (T0 v0, T1 v1, T2 v2, T3 v3) tup)
+
+            {
+
+                Read(out tup.v0);
+
+                Read(out tup.v1);
+
+                Read(out tup.v2);
+
+                Read(out tup.v3);
+
+            }
+
+
+
+            public void Read<T0, T1, T2, T3, T4>(out (T0 v0, T1 v1, T2 v2, T3 v3, T4 v4) tup)
+
+            {
+
+                Read(out tup.v0);
+
+                Read(out tup.v1);
+
+                Read(out tup.v2);
+
+                Read(out tup.v3);
+
+                Read(out tup.v4);
+
+            }
+
+
+
+            public void Read<T0, T1, T2, T3, T4, T5>(out (T0 v0, T1 v1, T2 v2, T3 v3, T4 v4, T5 v5) tup)
+
+            {
+
+                Read(out tup.v0);
+
+                Read(out tup.v1);
+
+                Read(out tup.v2);
+
+                Read(out tup.v3);
+
+                Read(out tup.v4);
+
+                Read(out tup.v5);
+
+            }
+
+
+
+
+
+            internal void Read<T0>(out T0[] tarr, int s)
+
+            {
+
+                tarr = new T0[s];
+
+                for (int i = 0; i < s; i++)
+
+                    Read(out tarr[i]);
+
+            }
+
+
+
+            internal void Read<T0, T1>(out (T0, T1)[] tarr, int s)
+
+            {
+
+                tarr = new (T0, T1)[s];
+
+                for (int i = 0; i < s; i++)
+
+                    Read(out tarr[i]);
+
+            }
+
+
+
+            internal void Read<T0, T1, T2>(out (T0, T1, T2)[] tarr, int s)
+
+            {
+
+                tarr = new (T0, T1, T2)[s];
+
+                for (int i = 0; i < s; i++)
+
+                    Read(out tarr[i]);
+
+            }
+
+
+
+            internal void Read<T0, T1, T2, T3>(out (T0, T1, T2, T3)[] tarr, int s)
+
+            {
+
+                tarr = new (T0, T1, T2, T3)[s];
+
+                for (int i = 0; i < s; i++)
+
+                    Read(out tarr[i]);
+
+            }
+
+
+
+
+
+
+
+            public object O()
+
+            {
+
+                var token = S();
+
+                if (int.TryParse(token, out int number))
+
+                    return number;
+
+                return token;
+
+
+
+            }
+
+
+
+            public string S()
+
+            {
+
+                return _tokens[_pos++];
+
+            }
+
+
+
+            public int I()
+
+            {
+
+                var token = S();
+
+                if (int.TryParse(token, out int number))
+
+                {
+
+                    return number;
+
+                }
+
+                else
+
+                {
+
+                    return SM.Add(token);
+
+                }
+
+
+
+            }
+
+
+
+            public ProblemReader(string path)
+
+            {
+
+                _tokens = ReadTokens(path).ToArray();
+
+            }
+
+
+
+            public static IEnumerable<string> ReadTokens(string filename)
+
+            {
+
+                string line;
+
+                StreamReader file = new StreamReader(filename);
+
+                while ((line = file.ReadLine()) != null)
+
+                {
+
+                    foreach (var word in line.Split(' '))
+
+                    {
+
+                        yield return word;
+
+                    }
+
+                }
+
+                file.Close();
+
+            }
+
+
+
+        }
+
+
+
+        public class StringMap
+
+        {
+
+            private List<string> _strings = new List<string>();
+
+            private Dictionary<string, int> _index = new Dictionary<string, int>();
+
+            private int _size = 0;
+
+            public int Add(string key)
+
+            {
+
+                if (_index.TryGetValue(key, out int val))
+
+                    return val;
+
+
+
+                _strings.Add(key);
+
+                _index.Add(key, _size);
+
+                _size++;
+
+                return _size - 1;
+
+            }
+
+
+
+            public int Lookup(string key)
+
+            {
+
+                return _index[key];
+
+            }
+
+
+
+            public string Lookup(int index)
+
+            {
+
+                return _strings[index];
+
+            }
+
+
+
+
+        }
+
+
+
+        public class Problem
+
+        {
+
+
+
+            public (int L, int G, int S, int B, int F, int N) P;
+
+            public (string N, int B)[] SD;
+
+            public (string N, int M, int D, int U, string[] S)[] Features;
+
+
+
+            public Problem(string path)
+
+            {
+
+                // L G S B F N - problem
+
+                // N B - Service description -
+
+                // N M D U newline S[] -
+
+
+
+                var pr = new ProblemReader(path);
+
+                pr.Read(out P);
+
+                pr.Read(out SD, P.S);
+
+                Features = new (string N, int M, int D, int U, string[] S)[P.F];
+
+                for (int i = 0; i < P.F; i++)
+
+                {
+
+                    ref var f = ref Features[i];
+
+                    pr.Read(out f.N);
+
+                    pr.Read(out f.M);
+
+                    pr.Read(out f.D);
+
+                    pr.Read(out f.U);
+
+                    pr.Read(out f.S, f.M);
+
+                }
+
+
+
+                //                       P.Dump();              
+
+
+
+            }
+
+
+
+            internal void Calculate()
+
+            {
+
+                // Solve problem
+
+            }
+
+        }
+
+
+
+
+
+        public class PracticeProblem
+
+        {
+
+
+
+            public int C;
+
+            public (int L, int[] Name)[] Likes;
+
+            public (int D, int[] Name)[] Dis;
+
+
+
+
+
+            public PracticeProblem(string path)
+
+            {
+
+
+
+                var pr = new ProblemReader(path);
+
+                pr.Read(out C);
+
+
+
+                //          (int a, int b) = pr.RV<int, int>(); // Example read tupple
+
+
+
+                //                       (int a, int b) = pr.RV<int, int>(); // Example read tupple
+
+
+
+
+
+                Likes = new (int L, int[])[C];
+
+                Dis = new (int D, int[])[C];
+
+                var DisLikes = new (int[] L, int[] D)[C];
+
+
+
+                for (int i = 0; i < C; i++)
+
+                {
+
+                    ref var f = ref Likes[i];
+
+                    pr.Read(out f.L);
+
+                    pr.Read(out f.Name, f.L);
+
+
+
+                    ref var d = ref Dis[i];
+
+                    pr.Read(out d.D);
+
+                    pr.Read(out d.Name, d.D);
+
+
+
+                    DisLikes[i] = (f.Name, d.Name);
+
+
+
                 }
             }
 
-            CacheSet(n,c,(val,l));
 
-            return (val, l);
-        }
 
-        static int _greedyLimit = 200000;
+            internal void Calculate()
 
-        static (int, List<int>) KnapSack_Greedy(int n, int c)
-        {
-            if (n == -1 || c == 0) return (0, new List<int>());
-
-            if (c < _greedyLimit) return KnapSack(n,c);
-
-            int val;
-            List<int> l;
-
-            if (V[n] > c)
             {
-                (val, l) = KnapSack_Greedy(n - 1, c);
-            }
-            else
-            {
-                (val, l) = KnapSack_Greedy(n - 1, c - V[n]);
-                val += V[n];
-                l.Add(n);
+
+                // Solve problem
+
             }
 
-            return (val, l);
-        }
-        #endregion
-        
-
-        static void Main()
-        {
-            var t = new Thread(()=> Startup(), 10000000);
-            t.Start();
-            t.Join();
         }
 
-        static void Startup()
-        {
-            string basePath = @"input/";
-            string outputPath = @"../../../output/";
-            (string, int)[] problems =
-            {
-                ("a_example", 10000),
-                ("b_small", 10000),
-                ("c_medium", 10000),
-                ("d_quite_big", 200000),
-                ("e_also_big", 10000)
-            };
 
-            foreach ((string problem, int problemGreedyLimit) in problems)
-            {
-                ReadProblem(basePath+problem + ".in");
 
-                _greedyLimit = problemGreedyLimit;
-                Console.WriteLine("GreedyLimit = " + _greedyLimit);
 
-                int score;
-                List<int> pizzas;
 
-                (score, pizzas) = KnapSack_Greedy(NOfPizzas - 1, Capacity);
-                Console.WriteLine($"score = {score}  ({100.0 * score / Capacity:G3}%)");
+        // Define structure that matches structure
 
-                CacheStatistics();
-                WriteSolution(outputPath+problem + ".out", pizzas);
-            }
 
-            //Console.WriteLine("\n    [Any key to close]");
-            //Console.ReadKey(true);
-        }
+
     }
 }
