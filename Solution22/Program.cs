@@ -11,6 +11,8 @@ namespace HashCode20Solution
         public static int NOfPizzas;
         public static int[] V;
 
+        // Søren was here and is testing that I can add something to GIT. 
+
         //// IO
         #region IO
         static void ReadProblem(string filename)
