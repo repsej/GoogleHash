@@ -123,6 +123,14 @@ an integer Lk (1≤Lk≤100) – the required skill level.
 
             }
 
+            int GetSkill(int contributor, string key)
+            {
+                if (Contributors[contributor].Skills.TryGetValue(key, out int skill))
+                    return skill;
+                return 0;
+            }
+
+
             internal void Calculate()
             {
                 var scheduledProjects = new SortedDictionary<int, int> ();
@@ -166,14 +174,26 @@ an integer Lk (1≤Lk≤100) – the required skill level.
                                 if (attemptContributors.Contains(c))
                                     continue;
 
-                                if (contributor.Skills.TryGetValue(sk.SkillName, out var level))
+                                var level = GetSkill(c, sk.SkillName);
                                 {
+                                    if (level == sk.Level - 1)
+                                    {
+                                        if(attemptContributors.Any(ct => GetSkill(ct, sk.SkillName) >= sk.Level))
+                                        {
+                                            attemptContributors.Add(c);
+                                            foundC = true;
+                                            break;
+
+                                        }
+                                    }
+                                    
                                     if (level >= sk.Level)
                                     {
                                         attemptContributors.Add(c);
                                         foundC = true;
                                         break;
                                     }
+
                                 }
                             }
                             if (!foundC)
@@ -197,6 +217,10 @@ an integer Lk (1≤Lk≤100) – the required skill level.
                             {
                                 var sc = attemptContributors[subi];
                                 Contributors[sc].Available = day + p.Days;
+                                if(!Contributors[sc].Skills.ContainsKey(p.Skills[subi].SkillName))
+                                {
+                                    Contributors[sc].Skills.Add(p.Skills[subi].SkillName, 1); 
+                                }
                                 if (p.Skills[subi].Level >= Contributors[sc].Skills[p.Skills[subi].SkillName])
                                 {
                                     Contributors[sc].Skills[p.Skills[subi].SkillName]++;
@@ -220,13 +244,14 @@ an integer Lk (1≤Lk≤100) – the required skill level.
                         break;
                     }
 
-                    Console.WriteLine($" {day} {availableProjects.Count} {score} {outpath}");
+//                    Console.WriteLine($" {day} {availableProjects.Count} {score} {outpath}");
 
                 }
 
 
                 using (StreamWriter file = new StreamWriter(outpath))
                 {
+
                     file.WriteLine(solution.Count);
                     foreach(var s in solution)
                     {
@@ -235,7 +260,7 @@ an integer Lk (1≤Lk≤100) – the required skill level.
                     }
                 }
 
-                Console.WriteLine($"Wrote solution to: {outpath}");
+                Console.WriteLine($"Wrote solution to: {outpath} : {score}");
 
 
             }
