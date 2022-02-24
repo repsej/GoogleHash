@@ -60,6 +60,12 @@ namespace HashCode22Solution
                 // N M D U newline S[] -
 
                 var pr = new ProblemReader(path);
+                pr.Read(out int P);
+                pr.Read(out int N);
+                int[] Data;
+                pr.Read(out Data, N);
+
+                /*
                 pr.Read(out P);
                 pr.Read(out SD, P.S);
 
@@ -73,6 +79,7 @@ namespace HashCode22Solution
                     pr.Read(out f.U);
                     pr.Read(out f.S, f.M);
                 }
+                */
             }
 
             internal void Calculate()
