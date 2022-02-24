@@ -24,11 +24,10 @@ namespace HashCode22Solution
                 Console.WriteLine("Reading:" + path);
                 var problem = new Problem(path, path.Replace("Input", "Output"));
                 var t = new Thread(() => problem.Calculate(), 100000000);
-
-                
+                                
                 workers.Add(t);
                 t.Start();
-                t.Join();
+//                t.Join();
             }
 
             foreach (var thread in workers)
@@ -137,8 +136,8 @@ an integer Lk (1≤Lk≤100) – the required skill level.
 
                 while(availableProjects.Count > 0)
                 {
-                    var dailyProjects = new HashSet<int>(availableProjects);
-
+                    var dailyProjects = new List<int>(availableProjects);
+                    dailyProjects.OrderBy(v => Projects[v].Days);
                     while (dailyProjects.Count > 0)
                     {
                         var pi = dailyProjects.First();
