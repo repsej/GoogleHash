@@ -21,8 +21,8 @@ namespace HashCode22Solution
 
             foreach (var path in files)
             {
-                var solver = new PracticeProblem(path);
-                var t = new Thread(() => solver.Calculate(), 100000000);
+                var problem = new Problem(path);
+                var t = new Thread(() => problem.Calculate(), 100000000);
 
                 workers.Add(t);
                 t.Start();
@@ -33,6 +33,18 @@ namespace HashCode22Solution
             {
                 thread.Join();
             }
+        }
+
+        static void WriteSolution(string filename, List<int> pizzas)
+        {
+            using (StreamWriter file = new StreamWriter(filename))
+            {
+                file.WriteLine(pizzas.Count);
+                string p = string.Join(" ", pizzas);
+                file.WriteLine(p);
+            }
+
+            Console.WriteLine($"Wrote solution to: {filename}");
         }
 
         public class Problem
@@ -253,8 +265,6 @@ namespace HashCode22Solution
             }
         }
 
-
-
         public class StringMap
         {
             private List<string> _strings = new List<string>();
@@ -271,8 +281,6 @@ namespace HashCode22Solution
                 return _size - 1;
             }
 
-
-
             public int Lookup(string key)
             {
                 return _index[key];
@@ -283,43 +291,5 @@ namespace HashCode22Solution
                 return _strings[index];
             }
         }
-
-        
-        public class PracticeProblem
-        {
-            public int C;
-            public (int L, int[] Name)[] Likes;
-            public (int D, int[] Name)[] Dis;
-            public PracticeProblem(string path)
-            {
-                var pr = new ProblemReader(path);
-                pr.Read(out C);
-                //          (int a, int b) = pr.RV<int, int>(); // Example read tupple
-                //                       (int a, int b) = pr.RV<int, int>(); // Example read tupple
-                Likes = new (int L, int[])[C];
-                Dis = new (int D, int[])[C];
-                var DisLikes = new (int[] L, int[] D)[C];
-
-                for (int i = 0; i < C; i++)
-                {
-                    ref var f = ref Likes[i];
-                    pr.Read(out f.L);
-                    pr.Read(out f.Name, f.L);
-                    ref var d = ref Dis[i];
-                    pr.Read(out d.D);
-                    pr.Read(out d.Name, d.D);
-
-                    DisLikes[i] = (f.Name, d.Name);
-                }
-            }
-
-            internal void Calculate()
-            {
-                // Solve problem
-            }
-
-        }
-
-
     }
 }
