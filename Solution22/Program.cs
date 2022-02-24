@@ -22,9 +22,10 @@ namespace HashCode22Solution
             foreach (var path in files)
             {
                 Console.WriteLine("Reading:" + path);
-                var problem = new Problem(path);
+                var problem = new Problem(path, path.Replace("Input", "Output"));
                 var t = new Thread(() => problem.Calculate(), 100000000);
 
+                
                 workers.Add(t);
                 t.Start();
                 t.Join();
@@ -75,14 +76,16 @@ an integer Lk (1≤Lk≤100) – the required skill level.
 
         public class Problem
         {
+            string outpath;
             int C; int P;
             (string CName, int N, Dictionary<string, int> Skills, int Available)[] Contributors;
             (string PName, int Days, int Score, int BestBefore, int R, (string SkillName, int Level)[] Skills)[] Projects;
             // (Name N (SkillName L)[N])[C] -- contributors
             // (Name D S B R (X L)[R])[P]
 
-            public Problem(string path)
+            public Problem(string path, string outpath)
             {
+                this.outpath = outpath;
                 // L G S B F N - problem
                 // N B - Service description -
                 // N M D U newline S[] -
@@ -128,7 +131,7 @@ an integer Lk (1≤Lk≤100) – the required skill level.
                 var availableProjects = new HashSet<int>();
                 for (int i = 0; i < P; i++)
                     availableProjects.Add(i);
-                var solution = new List<object>();
+                var solution = new List<(string, string[] )>();
 
                 while(availableProjects.Count > 0)
                 {
@@ -182,7 +185,7 @@ an integer Lk (1≤Lk≤100) – the required skill level.
                         {
                             score += pscore;
 
-                            solution.Add((p.PName, attemptContributors.Select(s => Contributors[s].CName)));
+                            solution.Add((p.PName, attemptContributors.Select(s => Contributors[s].CName).ToArray()));
                             availableProjects.Remove(pi);
                             Console.WriteLine(p.PName);
 
@@ -202,6 +205,18 @@ an integer Lk (1≤Lk≤100) – the required skill level.
                     day++;
                 }
 
+
+                using (StreamWriter file = new StreamWriter(outpath))
+                {
+                    file.WriteLine(solution.Count);
+                    foreach(var s in solution)
+                    {
+                        file.WriteLine(s.Item1);
+                        file.WriteLine(string.Join(' ', s.Item2));
+                    }
+                }
+
+                Console.WriteLine($"Wrote solution to: {outpath}");
 
 
             }
