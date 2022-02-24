@@ -221,7 +221,7 @@ an integer Lk (1≤Lk≤100) – the required skill level.
                         break;
                     }
 
-                    Console.WriteLine($"{day} {availableProjects.Count}");
+                    Console.WriteLine($" {day} {availableProjects.Count} {score} {outpath}");
 
                 }
 
