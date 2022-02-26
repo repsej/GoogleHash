@@ -15,7 +15,7 @@ namespace HashCode22Solution
             string inputPath = "../../../Input/";
             string outputPath = "../../../Output/";
             int N = 1; // Solve only the first N problems
-            var files = Directory.GetFiles(inputPath).Where(f => f.Contains("dense")); ;
+            var files = Directory.GetFiles(inputPath);//.Where(f => f.Contains("dense")); ;
 
             var workers = new List<Thread>();
 
@@ -147,10 +147,12 @@ an integer Lk (1≤Lk≤100) – the required skill level.
 
                 while(availableProjects.Count > 0)
                 {
-                    var dailyProjects = new List<int>(availableProjects.OrderBy(v => Projects[v].Skills.Length * Projects[v].Days).Take(availableProjects.Count / 2)) ;
+                    var dailyProjects = new List<int>(availableProjects);
+                    // Choose a sequence to processe the projcts in. 
+                    //var dailyProjects = new List<int>(availableProjects.OrderBy(v => Projects[v].Skills.Length * Projects[v].Days).Take(availableProjects.Count / 2)) ;
                     //dailyProjects = dailyProjects.OrderBy(v => Projects[v].Score - Projects[v].Days * Projects[v].Skills.Length - 10* Projects[v].BestBefore).ToList(); ;
-                    dailyProjects = dailyProjects.OrderBy(v => (Projects[v].Score + Math.Min(Projects[v].BestBefore - day, 0)) - (Projects[v].Days * Projects[v].Skills.Length)).ToList(); ;
-                    //dailyProjects = dailyProjects.OrderBy(v => Projects[v].BestBefore).ToList(); ;
+                    //dailyProjects = dailyProjects.OrderBy(v => (Projects[v].Score + Math.Min(Projects[v].BestBefore - day, 0)) - (Projects[v].Days * Projects[v].Skills.Length)).ToList(); ;
+                    dailyProjects = dailyProjects.OrderBy(v => Projects[v].BestBefore).ToList(); ;
 
                     while (dailyProjects.Count > 0)
                     {
@@ -167,11 +169,12 @@ an integer Lk (1≤Lk≤100) – the required skill level.
 
                         var attemptContributors = new List<int>();
                         var foundP = true;
-                        if (p.PName == "VideoUltrav2")
-                            Console.WriteLine("");
+
                         foreach (var sk in p.Skills)
                         {
                             var foundC = false;
+                            var cand = -1;
+
                             for (int c = 0; c < C; c++)
                             {
                                 ref var contributor = ref Contributors[c];
@@ -193,11 +196,7 @@ an integer Lk (1≤Lk≤100) – the required skill level.
                                             {
                                                 if ((GetSkill(ct, sk.SkillName) >= sk.Level) && p.Skills[i].SkillName != sk.SkillName)
                                                 {
-
-                                                    if (Contributors[c].CName == "c1337"  && p.PName == "VideoUltrav2")
-                                                        ;
-
-                                                    attemptContributors.Add(c);
+                                                    cand = c;
                                                     foundC = true;
                                                     goto stopSearchContributor;
                                                 }
@@ -211,19 +210,31 @@ an integer Lk (1≤Lk≤100) – the required skill level.
                                         }
                                     }
                                     
-                                    if (level >= sk.Level)
+                                    if (level == sk.Level)
                                     {
-                                        if (Contributors[c].CName == "c1337" && p.PName == "VideoUltrav2")
-                                            ;
-                                        attemptContributors.Add(c);
+                                        cand = c;
                                         foundC = true;
-                                        break;
+                                        break; 
+                                    }
+                                    if (level > sk.Level)
+                                    {
+                                        if (!foundC)
+                                        {
+                                            cand = c;
+                                            foundC = true;
+                                        }
+                                        //break;  // commented out as we want to keep seraching for candidates that can get training out of it. 
                                     }
 
                                 }
                             }
                         stopSearchContributor:
-                            if (!foundC)
+                            if (foundC)
+                            {
+                                attemptContributors.Add(cand);
+
+                            }
+                            else
                             {
                                 foundP = false;
                                 break;
@@ -253,11 +264,6 @@ an integer Lk (1≤Lk≤100) – the required skill level.
                                 {
 
                                     Contributors[sc].Skills[p.Skills[subi].SkillName]++;
-
-
-
-                                    if (Contributors[sc].CName == "c1337")
-                                        Console.WriteLine($"Leveling up {Contributors[sc].CName} {p.Skills[subi].SkillName} {Contributors[sc].Skills[p.Skills[subi].SkillName]} project:{p.PName}");
                                 }
                             }
 
@@ -281,7 +287,7 @@ an integer Lk (1≤Lk≤100) – the required skill level.
                     if (score > next)
                     {
                         Console.WriteLine($" {day} {availableProjects.Count} {score} {outpath}");
-                        next = score + 10000;
+                        next = score + 100000;
 
                     }
 
